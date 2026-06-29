@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { socket } from "./socket";
+import GameBoard from "./components/GameBoard";
+import { socket, type GameData } from "./socket";
 
 function App() {
-  const [gameId, setGameId] = useState<string | null>(null);
+  const [gameData, setGameData] = useState<GameData | null>(null);
   const [message, setMessage] = useState("Click Join Game to find a match.");
 
   useEffect(() => {
     socket.connect();
 
     socket.on("gameJoined", ({ gameId, status }) => {
-      setGameId(gameId);
       setMessage(
         status === "waiting"
           ? `Created game ${gameId}. Waiting for another player...`
@@ -18,9 +18,9 @@ function App() {
       );
     });
 
-    socket.on("gameStarted", ({ gameId, role }) => {
-      setGameId(gameId);
-      setMessage(`Game ${gameId} started! You are ${role}`);
+    socket.on("gameStarted", (gameInfo) => {
+      setGameData(gameInfo);
+      setMessage(`Game ${gameInfo.gameId} started! You are ${gameInfo.role}`);
     });
 
     return () => {
@@ -36,10 +36,22 @@ function App() {
 
   return (
     <div>
-      <h1>Join game or start new one</h1>
       <p>{message}</p>
-      {gameId && <p>Game ID: {gameId}</p>}
-      <button onClick={() => joinGame()}>Join Game</button>
+      {gameData ? (
+        <>
+          <GameBoard gameData={gameData} />
+        </>
+      ) : (
+        <>
+          <h1>Join game or start new one</h1>
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 active:bg-blue-700 transition-colors"
+            onClick={() => joinGame()}
+          >
+            Join Game
+          </button>
+        </>
+      )}
     </div>
   );
 }

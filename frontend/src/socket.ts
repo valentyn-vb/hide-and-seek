@@ -5,12 +5,20 @@ interface ServerToClientEvents {
     gameId: string;
     status: "waiting" | "inProgress" | "finished";
   }) => void;
-  gameStarted: (payload: {
-    gameId: string;
-    seekerId: string;
-    hiderId?: string;
-    role: "seeker" | "hider";
-  }) => void;
+  gameStarted: (payload: GameData) => void;
+}
+
+export interface GameData {
+  gameId: string;
+  seeker: Player;
+  hider?: Player;
+  role: "seeker" | "hider";
+  start: number;
+}
+
+interface Player {
+  id: string;
+  coordinates: [number, number];
 }
 
 interface ClientToServerEvents {
