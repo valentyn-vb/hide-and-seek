@@ -3,13 +3,13 @@ import { io, type Socket } from "socket.io-client";
 interface ServerToClientEvents {
   gameJoined: (payload: {
     gameId: string;
-    role: "seeker" | "hider";
     status: "waiting" | "inProgress" | "finished";
   }) => void;
   gameStarted: (payload: {
     gameId: string;
     seekerId: string;
     hiderId?: string;
+    role: "seeker" | "hider";
   }) => void;
 }
 

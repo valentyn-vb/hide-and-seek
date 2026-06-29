@@ -9,18 +9,18 @@ function App() {
   useEffect(() => {
     socket.connect();
 
-    socket.on("gameJoined", ({ gameId, role, status }) => {
+    socket.on("gameJoined", ({ gameId, status }) => {
       setGameId(gameId);
       setMessage(
         status === "waiting"
-          ? `Created game ${gameId}. You are the ${role}. Waiting for another player...`
-          : `Joined game ${gameId} as the ${role}.`,
+          ? `Created game ${gameId}. Waiting for another player...`
+          : `Joined game ${gameId}.`,
       );
     });
 
-    socket.on("gameStarted", ({ gameId }) => {
+    socket.on("gameStarted", ({ gameId, role }) => {
       setGameId(gameId);
-      setMessage(`Game ${gameId} started!`);
+      setMessage(`Game ${gameId} started! You are ${role}`);
     });
 
     return () => {

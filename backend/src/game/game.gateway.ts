@@ -23,12 +23,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinGame')
   async handleJoinGame(@ConnectedSocket() player: Socket) {
     const game = this.gameService.joinOrCreateGame(player);
-    const role = game.seeker.id === player.id ? 'seeker' : 'hider';
 
     await player.join(game.id);
     player.emit('gameJoined', {
       gameId: game.id,
-      role,
       status: game.status,
     });
 
@@ -36,11 +34,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    this.server.to(game.id).emit('gameStarted', {
+    const payload = {
       gameId: game.id,
       seekerId: game.seeker.id,
       hiderId: game.hider?.id,
-    });
+    };
+
+    game.seeker.to(game.id).emit('gameStarted', { ...payload, role: 'seeker' });
+    if (game.hider)
+      game.hider.to(game.id).emit('gameStarted', { ...payload, role: 'hider' });
   }
 
   handleConnection(client: Socket) {
