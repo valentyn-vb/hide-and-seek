@@ -1,5 +1,5 @@
 import {
-  MessageBody,
+  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -20,9 +20,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(private readonly gameService: GameService) {}
 
-  @SubscribeMessage('test')
-  handleMessage(@MessageBody() body: string) {
-    console.log('🚀 ~ GameGateway ~ handleMessage ~ body:', body);
+  @SubscribeMessage('joinGame')
+  handleMessage(@ConnectedSocket() player: Socket) {
+    const gameId = this.gameService.joinOrCreateGame(player);
+    this.server.emit(gameId);
   }
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
