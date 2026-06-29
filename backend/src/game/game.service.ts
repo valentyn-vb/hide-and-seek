@@ -12,20 +12,23 @@ const currentGames: Game[] = [];
 @Injectable()
 export class GameService {
   public joinOrCreateGame(player: Socket) {
-    const waitingGame = currentGames.find((game) => game.status === 'waiting');
+    const waitingGame = currentGames.find(
+      (game) => game.status === 'waiting' && game.seeker.id !== player.id,
+    );
     if (waitingGame) {
       waitingGame.hider = player;
       waitingGame.status = 'inProgress';
-      return waitingGame.id;
+      return waitingGame;
     }
 
     const id = uuidv4();
-    currentGames.push({
+    const game: Game = {
       id,
       seeker: player,
       status: 'waiting',
-    });
+    };
+    currentGames.push(game);
 
-    return id;
+    return game;
   }
 }

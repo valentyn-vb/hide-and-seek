@@ -21,10 +21,28 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly gameService: GameService) {}
 
   @SubscribeMessage('joinGame')
-  handleMessage(@ConnectedSocket() player: Socket) {
-    const gameId = this.gameService.joinOrCreateGame(player);
-    this.server.emit(gameId);
+  async handleJoinGame(@ConnectedSocket() player: Socket) {
+    const game = this.gameService.joinOrCreateGame(player);
+    const role = game.seeker.id === player.id ? 'seeker' : 'hider';
+
+    await player.join(game.id);
+    player.emit('gameJoined', {
+      gameId: game.id,
+      role,
+      status: game.status,
+    });
+
+    if (game.status === 'waiting') {
+      return;
+    }
+
+    this.server.to(game.id).emit('gameStarted', {
+      gameId: game.id,
+      seekerId: game.seeker.id,
+      hiderId: game.hider?.id,
+    });
   }
+
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
   }
