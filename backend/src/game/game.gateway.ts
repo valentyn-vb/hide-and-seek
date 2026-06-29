@@ -1,6 +1,8 @@
 import {
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -14,10 +16,14 @@ import { GameService } from './game.service';
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   constructor(private readonly gameService: GameService) {}
 
+  @SubscribeMessage('test')
+  handleMessage(@MessageBody() body: string) {
+    console.log('🚀 ~ GameGateway ~ handleMessage ~ body:', body);
+  }
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
   }
