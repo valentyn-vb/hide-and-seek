@@ -1,29 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { GameData } from "../socket";
 import "./CameBoard.css";
 
 const tenIndexArray = Array.from({ length: 10 }, (_, i) => i);
 const BOARD = Array.from({ length: 10 }, () => tenIndexArray);
 
-const calculateTimeLeft = (startTime: number, duration: number) => {
-  console.log("🚀 ~ calculateTimeLeft ~ duration:", duration);
-  return duration - (Date.now() - startTime);
+const calculateTimeLeft = (startTime: number, duration: number) =>
+  Math.max(0, duration - (Date.now() - startTime));
+
+const formatTime = (ms: number) => {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
 export default function GameBoard({ gameData }: { gameData: GameData }) {
-  const [timeLeft, setTimeLeft] = useState<number | null>(
-    calculateTimeLeft(gameData.start, gameData.duration),
+  const { start, duration, role } = gameData;
+  const coordinates =
+    gameData.role === "seeker"
+      ? gameData.seeker.coordinates
+      : (gameData.hider?.coordinates ?? [0, 0]);
+
+  const [timeLeft, setTimeLeft] = useState(() =>
+    calculateTimeLeft(start, duration),
   );
 
-  const coordinates = gameData[gameData.role].coordinates;
+  useEffect(() => {
+    const tick = () => {
+      setTimeLeft(calculateTimeLeft(start, duration));
+    };
 
-  const interval = setInterval(() => {
-    if (timeLeft === 0) clearInterval(interval);
-    setTimeLeft(timeLeft - 1000);
-  }, 1000);
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [start, duration]);
+
   return (
     <>
-      <span>{timeLeft}</span>
+      <p>
+        Role: {role} · Time left: {formatTime(timeLeft)}
+      </p>
       <div className="grid grid-cols-10 w-fit">
         {BOARD.map((row, rowIndex) =>
           row.map((_, colIndex) => (
