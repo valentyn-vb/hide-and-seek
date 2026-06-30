@@ -57,11 +57,6 @@ export class GameService {
       duration: 600000,
     };
     currentGames.push(game);
-    console.log(
-      '🚀 ~ GameService ~ joinOrCreateGame ~ currentGames:',
-      currentGames,
-    );
-
     return game;
   }
 
@@ -71,10 +66,7 @@ export class GameService {
   ): Game | null {
     console.log('🚀 ~ GameService ~ handleGameAction ~ payload:', payload);
     const game = currentGames.find(({ id }) => id === payload.gameId);
-    console.log(
-      '🚀 ~ GameService ~ handleGameAction ~ currentGames:',
-      currentGames,
-    );
+
     if (!game || game.status !== 'running') {
       return null;
     }

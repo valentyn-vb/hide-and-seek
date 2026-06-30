@@ -1,14 +1,15 @@
-import { memo, useEffect } from "react";
-import { socket, type GameData } from "../socket";
+import { memo, useEffect, useState } from "react";
+import { socket, type GameData, type PlayerRole } from "../socket";
 import "./CameBoard.css";
 
 function GameBoard({ gameData }: { gameData: GameData }) {
   const { role, gameId } = gameData;
-  const coordinates =
-    gameData.role === "seeker"
-      ? gameData.seeker.coordinates
-      : (gameData.hider?.coordinates ?? [0, 0]);
-
+  const [seekerCoordinates, setSeekerCoordinates] = useState(
+    gameData.seeker.coordinates,
+  );
+  const [hiderCoordinates, setHiderCoordinates] = useState(
+    gameData.hider?.coordinates,
+  );
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -32,15 +33,33 @@ function GameBoard({ gameData }: { gameData: GameData }) {
   }, [gameId, role]);
 
   useEffect(() => {
-    const onGameAction = (res: unknown) => {
-      console.log("🚀 ~ onGameAction ~ res:", res);
-    };
-    socket.on("gameAction", onGameAction);
-
-    return () => {
-      socket.off("gameAction", onGameAction);
-    };
+    socket.on(
+      "gameAction",
+      (res: { role: PlayerRole; newCoordinates: [number, number] }) => {
+        if (res.role === "seeker") {
+          setSeekerCoordinates(res.newCoordinates);
+        } else if (res.role === "hider") {
+          setHiderCoordinates(res.newCoordinates);
+        }
+      },
+    );
   }, []);
+
+  const getOccupant = (rowIndex: number, colIndex: number) => {
+    if (
+      seekerCoordinates[0] === rowIndex + 1 &&
+      seekerCoordinates[1] === colIndex + 1
+    ) {
+      return <span>🏃</span>;
+    }
+    if (
+      hiderCoordinates[0] === rowIndex + 1 &&
+      hiderCoordinates[1] === colIndex + 1
+    ) {
+      return <span>🙈</span>;
+    }
+    return null;
+  };
 
   return (
     <div className="grid grid-cols-10 w-fit">
@@ -50,11 +69,9 @@ function GameBoard({ gameData }: { gameData: GameData }) {
             key={`${rowIndex}-${colIndex}`}
             data-y={rowIndex}
             data-x={colIndex}
-            className="w-[100px] h-[100px] border border-black flex items-center justify-center "
+            className="w-[100px] h-[100px] border border-black flex items-center justify-center"
           >
-            {coordinates[0] === rowIndex + 1 &&
-              coordinates[1] === colIndex + 1 &&
-              "👨"}
+            {getOccupant(rowIndex, colIndex)}
           </div>
         )),
       )}

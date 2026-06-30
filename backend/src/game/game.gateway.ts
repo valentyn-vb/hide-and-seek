@@ -41,13 +41,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       duration,
     };
 
-    seeker.socket
-      .to(gameId)
-      .emit('gameStarted', { ...basePayload, role: 'seeker' });
+    seeker.socket.emit('gameStarted', { ...basePayload, role: 'seeker' });
     if (hider) {
-      hider.socket
-        .to(gameId)
-        .emit('gameStarted', { ...basePayload, role: 'hider' });
+      hider.socket.emit('gameStarted', { ...basePayload, role: 'hider' });
     }
   }
 
@@ -61,9 +57,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     },
     @ConnectedSocket() player: Socket,
   ) {
-    console.log('🚀 ~ body:', body);
     const game = this.gameService.handleGameAction(body, player);
-    console.log('🚀 ~ game:', game);
     if (!game) {
       this.server.to(body.gameId).emit('gameAction', 'something went wrong');
       return;

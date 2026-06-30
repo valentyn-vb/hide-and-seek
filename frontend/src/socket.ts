@@ -8,7 +8,7 @@ interface ServerToClientEvents {
   gameStarted: (payload: GameData) => void;
   gameAction: (payload: {
     role: PlayerRole;
-    coordinate: [number, number];
+    newCoordinates: [number, number];
   }) => void;
 }
 
@@ -21,7 +21,7 @@ export interface GameData {
   duration: number;
 }
 
-interface Player {
+export interface Player {
   id: string;
   coordinates: [number, number];
 }
