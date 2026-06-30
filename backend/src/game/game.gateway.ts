@@ -54,10 +54,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() player: Socket,
   ) {
     const game = this.gameService.handleGameAction(body, player);
+
     if (!game) {
       this.server.to(body.gameId).emit('gameAction', 'something went wrong');
       return;
     }
+
+    if (game.status === 'finished') {
+      this.server.to(body.gameId).emit('gameFinished', game.winner);
+      return;
+    }
+
     this.server.to(body.gameId).emit('gameAction', {
       role: body.role,
       newCoordinates: game[body.role]?.coordinates,

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import GameBoard from "./components/GameBoard";
 import GameTimer from "./components/GameTimer";
-import { socket, type GameData } from "./socket";
+import { socket, type GameData, type PlayerRole } from "./socket";
 
 function App() {
   const [gameData, setGameData] = useState<GameData | null>(null);
@@ -35,6 +35,16 @@ function App() {
     socket.emit("joinGame");
   }
 
+  function onGameFinished(winner: PlayerRole) {
+    setMessage(
+      `Game finished! ${winner === gameData?.role ? "You" : "Opponent"} won the game`,
+    );
+    alert(
+      `Game finished! ${winner === gameData?.role ? "You" : "Opponent"} won the game`,
+    );
+    setGameData(null);
+  }
+
   return (
     <div>
       <p>{message}</p>
@@ -45,7 +55,7 @@ function App() {
             duration={gameData.duration}
             role={gameData.role}
           />
-          <GameBoard gameData={gameData} />
+          <GameBoard gameData={gameData} onGameFinished={onGameFinished} />
         </>
       ) : (
         <>

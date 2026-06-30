@@ -17,6 +17,7 @@ export interface Game {
   status: GameStatus;
   duration: number;
   start?: number;
+  winner?: PlayerRole;
 }
 
 export interface GameActionPayload {

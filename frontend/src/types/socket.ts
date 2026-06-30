@@ -2,6 +2,7 @@ import type {
   GameActionPayload,
   GameActionResponse,
   GameData,
+  PlayerRole,
 } from "./game";
 
 export interface ServerToClientEvents {
@@ -11,6 +12,7 @@ export interface ServerToClientEvents {
   }) => void;
   gameStarted: (payload: GameData) => void;
   gameAction: (payload: GameActionResponse) => void;
+  gameFinished: (winner: PlayerRole) => void;
 }
 
 export interface ClientToServerEvents {

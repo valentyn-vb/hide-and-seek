@@ -2,12 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import { getNewCoordinates } from './coordinates.util';
-import {
-  GAME_DURATION,
-  HIDER_START,
-  SEEKER_START,
-} from './game.constants';
-import type { Game, GameActionPayload } from './game.types';
+import { GAME_DURATION, HIDER_START, SEEKER_START } from './game.constants';
+import type { Game, GameActionPayload, ServerPlayer } from './game.types';
 
 const currentGames: Game[] = [];
 
@@ -42,26 +38,38 @@ export class GameService {
     return game;
   }
 
+  private startGameCountdown(duration: number) {}
+
   public handleGameAction(
     payload: GameActionPayload,
     player: Socket,
   ): Game | null {
-    console.log('🚀 ~ GameService ~ handleGameAction ~ payload:', payload);
     const game = currentGames.find(({ id }) => id === payload.gameId);
 
     if (!game || game.status !== 'running') {
       return null;
     }
 
-    const activePlayer = payload.role === 'seeker' ? game.seeker : game.hider;
+    const hider = game.hider as ServerPlayer;
+    const seeker = game.seeker;
+    const activePlayer = payload.role === 'seeker' ? seeker : hider;
     if (!activePlayer || activePlayer.socket.id !== player.id) {
       return null;
     }
 
-    activePlayer.coordinates = getNewCoordinates(
+    const newCoordinates = getNewCoordinates(
       activePlayer.coordinates,
       payload.action,
     );
+    activePlayer.coordinates = newCoordinates;
+
+    if (
+      seeker.coordinates[0] === hider.coordinates[0] &&
+      seeker.coordinates[1] === hider.coordinates[1]
+    ) {
+      game.status = 'finished';
+      game.winner = 'seeker';
+    }
 
     return game;
   }

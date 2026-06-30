@@ -1,10 +1,16 @@
 import { memo, useEffect, useState } from "react";
 import { BOARD } from "../constants/board";
 import { socket, type GameData } from "../socket";
-import type { GameActionResponse } from "../types/game";
+import type { GameActionResponse, PlayerRole } from "../types/game";
 import "./CameBoard.css";
 
-function GameBoard({ gameData }: { gameData: GameData }) {
+function GameBoard({
+  gameData,
+  onGameFinished,
+}: {
+  gameData: GameData;
+  onGameFinished: (winner: PlayerRole) => void;
+}) {
   const { role, gameId } = gameData;
   const [seekerCoordinates, setSeekerCoordinates] = useState(
     gameData.seeker.coordinates,
@@ -42,7 +48,18 @@ function GameBoard({ gameData }: { gameData: GameData }) {
         setHiderCoordinates(res.newCoordinates);
       }
     });
-  }, []);
+
+    return () => {
+      socket.off("gameAction");
+    };
+  }, [role]);
+
+  useEffect(() => {
+    socket.on("gameFinished", (winner: PlayerRole) => onGameFinished(winner));
+    return () => {
+      socket.off("gameFinished");
+    };
+  }, [onGameFinished]);
 
   const getOccupant = (rowIndex: number, colIndex: number) => {
     if (
