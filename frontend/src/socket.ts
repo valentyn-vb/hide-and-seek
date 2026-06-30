@@ -14,6 +14,7 @@ export interface GameData {
   hider?: Player;
   role: "seeker" | "hider";
   start: number;
+  duration: number;
 }
 
 interface Player {

@@ -23,7 +23,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinGame')
   async handleJoinGame(@ConnectedSocket() player: Socket) {
     const game = this.gameService.joinOrCreateGame(player);
-    const { id: gameId, status, seeker, hider, start } = game;
+    const { id: gameId, status, seeker, hider, start, duration } = game;
 
     await player.join(gameId);
     player.emit('gameJoined', { gameId, status });
@@ -35,8 +35,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const basePayload = {
       gameId,
       seeker: { id: seeker.socket.id, coordinates: seeker?.coordinates },
-      hiderId: { id: hider?.socket.id, coordinates: hider?.coordinates },
+      hider: { id: hider?.socket.id, coordinates: hider?.coordinates },
       start,
+      duration,
     };
 
     seeker.socket
