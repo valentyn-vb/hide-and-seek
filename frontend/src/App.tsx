@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import GameBoard from "./components/GameBoard";
+import GameTimer from "./components/GameTimer";
 import { socket, type GameData } from "./socket";
 
 function App() {
@@ -39,6 +40,11 @@ function App() {
       <p>{message}</p>
       {gameData ? (
         <>
+          <GameTimer
+            start={gameData.start}
+            duration={gameData.duration}
+            role={gameData.role}
+          />
           <GameBoard gameData={gameData} />
         </>
       ) : (
