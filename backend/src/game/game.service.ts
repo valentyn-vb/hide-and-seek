@@ -38,7 +38,15 @@ export class GameService {
     return game;
   }
 
-  private startGameCountdown(duration: number) {}
+  public startGameCountdown(game: Game) {
+    return new Promise<Game>((resolve) => {
+      setTimeout(() => {
+        game.status = 'finished';
+        game.winner = 'hider';
+        resolve(game);
+      }, game.duration);
+    });
+  }
 
   public handleGameAction(
     payload: GameActionPayload,

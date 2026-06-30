@@ -9,7 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
-import type { GameActionPayload } from './game.types';
+import type { Game, GameActionPayload } from './game.types';
 
 @WebSocketGateway({
   cors: {
@@ -46,6 +46,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (hider) {
       hider.socket.emit('gameStarted', { ...basePayload, role: 'hider' });
     }
+
+    void this.gameService
+      .startGameCountdown(game)
+      .then((game) => this.endGame(game));
   }
 
   @SubscribeMessage('gameAction')
@@ -61,7 +65,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     if (game.status === 'finished') {
-      this.server.to(body.gameId).emit('gameFinished', game.winner);
+      this.endGame(game);
       return;
     }
 
@@ -69,6 +73,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       role: body.role,
       newCoordinates: game[body.role]?.coordinates,
     });
+  }
+
+  private endGame(game: Game) {
+    this.server.to(game.id).emit('gameFinished', game.winner);
   }
 
   handleConnection(client: Socket) {

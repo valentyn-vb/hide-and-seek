@@ -36,12 +36,9 @@ function App() {
   }
 
   function onGameFinished(winner: PlayerRole) {
-    setMessage(
-      `Game finished! ${winner === gameData?.role ? "You" : "Opponent"} won the game`,
-    );
-    alert(
-      `Game finished! ${winner === gameData?.role ? "You" : "Opponent"} won the game`,
-    );
+    const message = `finished! ${winner === gameData?.role ? "You" : "Opponent"} won the game`;
+    setMessage(`Previous game ${message}`);
+    alert(`Game ${message}`);
     setGameData(null);
   }
 
