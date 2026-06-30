@@ -53,11 +53,25 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('gameAction')
   handleGameAction(
-    @MessageBody() body: string,
+    @MessageBody()
+    body: {
+      gameId: string;
+      action: 'up' | 'down' | 'left' | 'right';
+      role: 'hider' | 'seeker';
+    },
     @ConnectedSocket() player: Socket,
   ) {
-    console.log('🚀 ~ player:', player);
     console.log('🚀 ~ body:', body);
+    const game = this.gameService.handleGameAction(body, player);
+    console.log('🚀 ~ game:', game);
+    if (!game) {
+      this.server.to(body.gameId).emit('gameAction', 'something went wrong');
+      return;
+    }
+    this.server.to(body.gameId).emit('gameAction', {
+      role: body.role,
+      newCoordinates: game[body.role]?.coordinates,
+    });
   }
 
   handleConnection(client: Socket) {

@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
+
+type GameAction = 'up' | 'down' | 'left' | 'right';
+type PlayerRole = 'seeker' | 'hider';
+
 interface Game {
   id: string;
   seeker: Player;
@@ -14,6 +18,15 @@ interface Player {
   socket: Socket;
   coordinates: [number, number];
 }
+
+interface GameActionPayload {
+  gameId: string;
+  action: GameAction;
+  role: PlayerRole;
+}
+
+const BOARD_MIN = 1;
+const BOARD_MAX = 10;
 const currentGames: Game[] = [];
 
 @Injectable()
@@ -44,7 +57,58 @@ export class GameService {
       duration: 600000,
     };
     currentGames.push(game);
+    console.log(
+      '🚀 ~ GameService ~ joinOrCreateGame ~ currentGames:',
+      currentGames,
+    );
 
     return game;
+  }
+
+  public handleGameAction(
+    payload: GameActionPayload,
+    player: Socket,
+  ): Game | null {
+    console.log('🚀 ~ GameService ~ handleGameAction ~ payload:', payload);
+    const game = currentGames.find(({ id }) => id === payload.gameId);
+    console.log(
+      '🚀 ~ GameService ~ handleGameAction ~ currentGames:',
+      currentGames,
+    );
+    if (!game || game.status !== 'running') {
+      return null;
+    }
+
+    const activePlayer = payload.role === 'seeker' ? game.seeker : game.hider;
+    if (!activePlayer || activePlayer.socket.id !== player.id) {
+      return null;
+    }
+
+    activePlayer.coordinates = this.getNewCoordinates(
+      activePlayer.coordinates,
+      payload.action,
+    );
+
+    return game;
+  }
+
+  private clampCoordinate(value: number): number {
+    return Math.min(BOARD_MAX, Math.max(BOARD_MIN, value));
+  }
+
+  private getNewCoordinates(
+    [row, col]: [number, number],
+    action: GameAction,
+  ): [number, number] {
+    switch (action) {
+      case 'up':
+        return [this.clampCoordinate(row - 1), col];
+      case 'down':
+        return [this.clampCoordinate(row + 1), col];
+      case 'left':
+        return [row, this.clampCoordinate(col - 1)];
+      case 'right':
+        return [row, this.clampCoordinate(col + 1)];
+    }
   }
 }

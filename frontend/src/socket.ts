@@ -6,13 +6,17 @@ interface ServerToClientEvents {
     status: "waiting" | "inProgress" | "finished";
   }) => void;
   gameStarted: (payload: GameData) => void;
+  gameAction: (payload: {
+    role: PlayerRole;
+    coordinate: [number, number];
+  }) => void;
 }
 
 export interface GameData {
   gameId: string;
   seeker: Player;
   hider?: Player;
-  role: "seeker" | "hider";
+  role: PlayerRole;
   start: number;
   duration: number;
 }
@@ -22,11 +26,14 @@ interface Player {
   coordinates: [number, number];
 }
 
+type PlayerRole = "seeker" | "hider";
+
 interface ClientToServerEvents {
   joinGame: () => void;
   gameAction: (payload: {
     gameId: string;
     action: "up" | "down" | "left" | "right";
+    role: PlayerRole;
   }) => void;
 }
 

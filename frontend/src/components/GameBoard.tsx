@@ -4,6 +4,7 @@ import "./CameBoard.css";
 
 export default function GameBoard({ gameData }: { gameData: GameData }) {
   const { start, duration, role, gameId } = gameData;
+  console.log("🚀 ~ GameBoard ~ gameId:", gameId);
   const coordinates =
     gameData.role === "seeker"
       ? gameData.seeker.coordinates
@@ -27,24 +28,35 @@ export default function GameBoard({ gameData }: { gameData: GameData }) {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
         case "ArrowUp":
-          socket.emit("gameAction", { action: "up", gameId });
+          socket.emit("gameAction", { action: "up", gameId, role });
           break;
         case "ArrowDown":
-          socket.emit("gameAction", { action: "down", gameId });
+          socket.emit("gameAction", { action: "down", gameId, role });
 
           break;
         case "ArrowLeft":
-          socket.emit("gameAction", { action: "left", gameId });
+          socket.emit("gameAction", { action: "left", gameId, role });
 
           break;
         case "ArrowRight":
-          socket.emit("gameAction", { action: "right", gameId });
+          socket.emit("gameAction", { action: "right", gameId, role });
           break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  });
+
+  useEffect(() => {
+    const onGameAction = (res) => {
+      console.log("🚀 ~ onGameActiom ~ res:", res);
+    };
+    socket.on("gameAction", onGameAction);
+
+    return () => {
+      socket.off("gameAction", onGameAction);
+    };
   });
 
   return (
