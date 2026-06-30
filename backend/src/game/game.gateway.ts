@@ -1,5 +1,6 @@
 import {
   ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -48,6 +49,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .to(gameId)
         .emit('gameStarted', { ...basePayload, role: 'hider' });
     }
+  }
+
+  @SubscribeMessage('gameAction')
+  handleGameAction(
+    @MessageBody() body: string,
+    @ConnectedSocket() player: Socket,
+  ) {
+    console.log('🚀 ~ player:', player);
+    console.log('🚀 ~ body:', body);
   }
 
   handleConnection(client: Socket) {

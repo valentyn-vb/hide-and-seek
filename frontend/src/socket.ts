@@ -24,6 +24,10 @@ interface Player {
 
 interface ClientToServerEvents {
   joinGame: () => void;
+  gameAction: (payload: {
+    gameId: string;
+    action: "up" | "down" | "left" | "right";
+  }) => void;
 }
 
 const BASE_URL = import.meta.env.VITE_SERVER_URL;
