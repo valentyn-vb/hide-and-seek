@@ -12,5 +12,6 @@ export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
   BASE_URL,
   {
     autoConnect: false,
+    closeOnBeforeunload: true,
   },
 );

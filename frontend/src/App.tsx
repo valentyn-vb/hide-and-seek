@@ -11,6 +11,11 @@ function App() {
   useEffect(() => {
     socket.connect();
 
+    const disconnectOnLeave = () => {
+      socket.disconnect();
+    };
+    window.addEventListener("pagehide", disconnectOnLeave);
+
     socket.on("gameJoined", ({ gameId, status }) => {
       setMessage(
         status === "waiting"
@@ -25,6 +30,7 @@ function App() {
     });
 
     return () => {
+      window.removeEventListener("pagehide", disconnectOnLeave);
       socket.off("gameJoined");
       socket.off("gameStarted");
       socket.disconnect();

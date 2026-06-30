@@ -48,6 +48,23 @@ export class GameService {
     });
   }
 
+  public handlePlayerDisconnect(playerId: string): Game | null {
+    const game = currentGames.find(
+      (g) => g.seeker.socket.id === playerId || g.hider?.socket.id === playerId,
+    );
+    if (!game) {
+      return null;
+    }
+
+    if (game.status === 'running') {
+      game.status = 'finished';
+      game.winner = game.seeker.socket.id === playerId ? 'hider' : 'seeker';
+      return game;
+    }
+
+    return null;
+  }
+
   public handleGameAction(
     payload: GameActionPayload,
     player: Socket,
