@@ -1,5 +1,7 @@
 import { memo, useEffect, useState } from "react";
-import { socket, type GameData, type PlayerRole } from "../socket";
+import { BOARD } from "../constants/board";
+import { socket, type GameData } from "../socket";
+import type { GameActionResponse } from "../types/game";
 import "./CameBoard.css";
 
 function GameBoard({ gameData }: { gameData: GameData }) {
@@ -33,16 +35,13 @@ function GameBoard({ gameData }: { gameData: GameData }) {
   }, [gameId, role]);
 
   useEffect(() => {
-    socket.on(
-      "gameAction",
-      (res: { role: PlayerRole; newCoordinates: [number, number] }) => {
-        if (res.role === "seeker") {
-          setSeekerCoordinates(res.newCoordinates);
-        } else if (res.role === "hider") {
-          setHiderCoordinates(res.newCoordinates);
-        }
-      },
-    );
+    socket.on("gameAction", (res: GameActionResponse) => {
+      if (res.role === "seeker") {
+        setSeekerCoordinates(res.newCoordinates);
+      } else if (res.role === "hider") {
+        setHiderCoordinates(res.newCoordinates);
+      }
+    });
   }, []);
 
   const getOccupant = (rowIndex: number, colIndex: number) => {
@@ -80,6 +79,3 @@ function GameBoard({ gameData }: { gameData: GameData }) {
 }
 
 export default memo(GameBoard);
-
-const tenIndexArray = Array.from({ length: 10 }, (_, i) => i);
-const BOARD = Array.from({ length: 10 }, () => tenIndexArray);

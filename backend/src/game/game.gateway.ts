@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { GameService } from './game.service';
+import type { GameActionPayload } from './game.types';
 
 @WebSocketGateway({
   cors: {
@@ -49,12 +50,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('gameAction')
   handleGameAction(
-    @MessageBody()
-    body: {
-      gameId: string;
-      action: 'up' | 'down' | 'left' | 'right';
-      role: 'hider' | 'seeker';
-    },
+    @MessageBody() body: GameActionPayload,
     @ConnectedSocket() player: Socket,
   ) {
     const game = this.gameService.handleGameAction(body, player);

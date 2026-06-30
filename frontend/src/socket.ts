@@ -1,41 +1,10 @@
 import { io, type Socket } from "socket.io-client";
+import type {
+  ClientToServerEvents,
+  ServerToClientEvents,
+} from "./types/socket";
 
-interface ServerToClientEvents {
-  gameJoined: (payload: {
-    gameId: string;
-    status: "waiting" | "inProgress" | "finished";
-  }) => void;
-  gameStarted: (payload: GameData) => void;
-  gameAction: (payload: {
-    role: PlayerRole;
-    newCoordinates: [number, number];
-  }) => void;
-}
-
-export interface GameData {
-  gameId: string;
-  seeker: Player;
-  hider?: Player;
-  role: PlayerRole;
-  start: number;
-  duration: number;
-}
-
-export interface Player {
-  id: string;
-  coordinates: [number, number];
-}
-
-type PlayerRole = "seeker" | "hider";
-
-interface ClientToServerEvents {
-  joinGame: () => void;
-  gameAction: (payload: {
-    gameId: string;
-    action: "up" | "down" | "left" | "right";
-    role: PlayerRole;
-  }) => void;
-}
+export type { GameData, GameActionPayload, PlayerRole } from "./types/game";
 
 const BASE_URL = import.meta.env.VITE_SERVER_URL;
 
