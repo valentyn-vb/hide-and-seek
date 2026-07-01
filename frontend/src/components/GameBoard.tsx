@@ -2,7 +2,14 @@ import { memo, useEffect, useState } from "react";
 import { BOARD } from "../constants/board";
 import { socket, type GameData } from "../socket";
 import type { GameActionResponse, PlayerRole } from "../types/game";
-import "./CameBoard.css";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { cn } from "@/lib/utils";
 
 function GameBoard({
   gameData,
@@ -18,6 +25,7 @@ function GameBoard({
   const [hiderCoordinates, setHiderCoordinates] = useState(
     gameData.hider?.coordinates,
   );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -41,57 +49,85 @@ function GameBoard({
   }, [gameId, role]);
 
   useEffect(() => {
-    socket.on("gameAction", (res: GameActionResponse) => {
+    const onGameAction = (res: GameActionResponse) => {
       if (res.role === "seeker") {
         setSeekerCoordinates(res.newCoordinates);
       } else if (res.role === "hider") {
         setHiderCoordinates(res.newCoordinates);
       }
-    });
-
-    return () => {
-      socket.off("gameAction");
     };
-  }, [role]);
+
+    socket.on("gameAction", onGameAction);
+    return () => {
+      socket.off("gameAction", onGameAction);
+    };
+  }, []);
 
   useEffect(() => {
-    socket.on("gameFinished", (winner: PlayerRole) => onGameFinished(winner));
+    const onFinished = (winner: PlayerRole) => onGameFinished(winner);
+    socket.on("gameFinished", onFinished);
     return () => {
-      socket.off("gameFinished");
+      socket.off("gameFinished", onFinished);
     };
   }, [onGameFinished]);
 
   const getOccupant = (rowIndex: number, colIndex: number) => {
-    if (
-      seekerCoordinates[0] === rowIndex + 1 &&
-      seekerCoordinates[1] === colIndex + 1
-    ) {
-      return <span>🏃</span>;
+    const row = rowIndex + 1;
+    const col = colIndex + 1;
+
+    if (seekerCoordinates[0] === row && seekerCoordinates[1] === col) {
+      return (
+        <span className="text-2xl" title="Seeker">
+          🏃
+        </span>
+      );
     }
     if (
-      hiderCoordinates[0] === rowIndex + 1 &&
-      hiderCoordinates[1] === colIndex + 1
+      hiderCoordinates &&
+      hiderCoordinates[0] === row &&
+      hiderCoordinates[1] === col
     ) {
-      return <span>🙈</span>;
+      return (
+        <span className="text-2xl" title="Hider">
+          🙈
+        </span>
+      );
     }
     return null;
   };
 
   return (
-    <div className="grid grid-cols-10 w-fit">
-      {BOARD.map((row, rowIndex) =>
-        row.map((_, colIndex) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            data-y={rowIndex}
-            data-x={colIndex}
-            className="w-[100px] h-[100px] border border-black flex items-center justify-center"
-          >
-            {getOccupant(rowIndex, colIndex)}
-          </div>
-        )),
-      )}
-    </div>
+    <Card className="shadow-sm">
+      <CardHeader>
+        <CardTitle>Game board</CardTitle>
+        <CardDescription>
+          {role === "seeker"
+            ? "Hunt down the hider before time runs out."
+            : "Stay hidden until the clock hits zero."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex justify-center overflow-x-auto pb-2">
+        <div className="grid grid-cols-10 gap-1 rounded-xl border bg-muted/30 p-2">
+          {BOARD.map((row, rowIndex) =>
+            row.map((_, colIndex) => {
+              const occupied = getOccupant(rowIndex, colIndex);
+              return (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className={cn(
+                    "flex size-10 items-center justify-center rounded-md border border-border/60 bg-background text-lg transition-colors sm:size-12",
+                    occupied && "border-primary/30 bg-primary/5 shadow-sm",
+                    (rowIndex + colIndex) % 2 === 0 && !occupied && "bg-muted/20",
+                  )}
+                >
+                  {occupied}
+                </div>
+              );
+            }),
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
