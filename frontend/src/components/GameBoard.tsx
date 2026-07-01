@@ -1,7 +1,9 @@
+import { cn } from "@/lib/utils";
 import { memo, useEffect, useState } from "react";
 import { BOARD } from "../constants/board";
 import { socket, type GameData } from "../socket";
 import type { GameActionResponse, PlayerRole } from "../types/game";
+import PlayerToken from "./PlayerToken";
 import {
   Card,
   CardContent,
@@ -9,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { cn } from "@/lib/utils";
 
 function GameBoard({
   gameData,
@@ -76,22 +77,14 @@ function GameBoard({
     const col = colIndex + 1;
 
     if (seekerCoordinates[0] === row && seekerCoordinates[1] === col) {
-      return (
-        <span className="text-2xl" title="Seeker">
-          🏃
-        </span>
-      );
+      return <PlayerToken role="seeker" isYou={role === "seeker"} />;
     }
     if (
       hiderCoordinates &&
       hiderCoordinates[0] === row &&
       hiderCoordinates[1] === col
     ) {
-      return (
-        <span className="text-2xl" title="Hider">
-          🙈
-        </span>
-      );
+      return <PlayerToken role="hider" isYou={role === "hider"} />;
     }
     return null;
   };
@@ -115,9 +108,11 @@ function GameBoard({
                 <div
                   key={`${rowIndex}-${colIndex}`}
                   className={cn(
-                    "flex size-10 items-center justify-center rounded-md border border-border/60 bg-background text-lg transition-colors sm:size-12",
-                    occupied && "border-primary/30 bg-primary/5 shadow-sm",
-                    (rowIndex + colIndex) % 2 === 0 && !occupied && "bg-muted/20",
+                    "flex size-10 items-center justify-center rounded-md border border-border/60 bg-background transition-colors sm:size-12",
+                    occupied && "border-transparent bg-transparent shadow-none",
+                    (rowIndex + colIndex) % 2 === 0 &&
+                      !occupied &&
+                      "bg-muted/20",
                   )}
                 >
                   {occupied}
